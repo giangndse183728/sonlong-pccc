@@ -2,8 +2,8 @@
 
 import { useState, useMemo } from "react";
 import { SlidersHorizontal, Grid3X3, List, Search, X } from "lucide-react";
-import ProductCard from "@/app/components/ProductCard";
-import { products } from "@/app/data/products";
+import ProductCard from "../../components/ProductCard";
+import { products } from "../../data/products";
 
 const categories = [
   "Tất cả",
@@ -159,11 +159,10 @@ export default function ProductsPage() {
                   <li key={cat}>
                     <button
                       onClick={() => setActiveCategory(cat)}
-                      className={`w-full rounded-lg px-3 py-2 text-left text-sm transition-colors ${
-                        activeCategory === cat
+                      className={`w-full rounded-lg px-3 py-2 text-left text-sm transition-colors ${activeCategory === cat
                           ? "bg-red-primary/10 font-semibold text-red-primary"
                           : "text-steel hover:bg-silver hover:text-charcoal"
-                      }`}
+                        }`}
                     >
                       {cat}
                     </button>

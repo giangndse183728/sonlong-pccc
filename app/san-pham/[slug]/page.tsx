@@ -15,8 +15,8 @@ import {
   Share2,
   Check,
 } from "lucide-react";
-import ProductCard from "@/app/components/ProductCard";
-import { products } from "@/app/data/products";
+import ProductCard from "../../../components/ProductCard";
+import { products } from "../../../data/products";
 
 function formatPrice(price: number) {
   return new Intl.NumberFormat("vi-VN").format(price) + "đ";
