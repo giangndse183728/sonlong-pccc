@@ -33,13 +33,13 @@ export default function HeroSection() {
       {/* Red accent line */}
       <div className="absolute left-0 top-0 h-1 w-full bg-gradient-to-r from-red-primary via-red-dark to-red-primary" />
 
-      <div className="relative mx-auto flex flex-1 max-w-7xl items-center px-4">
+      <div className="relative mx-auto flex flex-1 max-w-7xl items-center px-4 py-12 lg:py-0">
         <div className="grid w-full items-center gap-12 lg:grid-cols-2">
           {/* Left content */}
           <div className="animate-fade-in">
-            <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-red-primary/30 bg-red-primary/10 px-4 py-1.5 text-sm font-medium text-red-light">
+            <span className="mb-4 hidden lg:inline-flex items-center gap-2 rounded-full border border-red-primary/30 bg-red-primary/10 px-4 py-1.5 text-sm font-medium text-red-light">
               <ShieldCheck size={16} />
-              Đơn vị cung cấp PCCC uy tín #1
+              Đơn vị cung cấp PCCC uy tín
             </span>
             <h1 className="mb-6 text-4xl font-extrabold leading-tight text-white md:text-4xl lg:text-5xl">
               Giải pháp{" "}
@@ -69,7 +69,7 @@ export default function HeroSection() {
           </div>
 
           {/* Right - Hero image */}
-          <div className="animate-slide-right relative">
+          <div className="animate-slide-right relative hidden lg:block">
             <div className="relative mx-auto aspect-[16/9]  overflow-hidden rounded-2xl border border-white/10">
               <Image
                 src="/images/hero-sonlong.jpg"

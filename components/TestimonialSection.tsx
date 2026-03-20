@@ -5,7 +5,7 @@ const testimonials = [
     name: "Nguyễn Văn Minh",
     role: "Giám đốc - Công ty XD Minh Phát",
     content:
-      "Sơn Long PCCC đã thi công hệ thống PCCC cho tòa nhà văn phòng 12 tầng của chúng tôi rất chuyên nghiệp. Nghiệm thu đạt 100% ngay lần đầu.",
+      "Sơn Long PCCC đã thi công hệ thống PCCC cho tòa nhà văn phòng 12 tầng của chúng tôi rất chuyên nghiệp.",
     rating: 5,
   },
   {

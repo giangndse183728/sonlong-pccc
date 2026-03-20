@@ -77,24 +77,7 @@ export default function ProductCard({ product }: { product: Product }) {
             )}
           </div>
 
-          {/* Stock & CTA */}
-          <div className="flex items-center justify-between">
-            <span
-              className={`flex items-center gap-1 text-xs font-medium ${
-                product.inStock ? "text-green-success" : "text-red-primary"
-              }`}
-            >
-              <span
-                className={`inline-block h-1.5 w-1.5 rounded-full ${
-                  product.inStock ? "bg-green-success" : "bg-red-primary"
-                }`}
-              />
-              {product.inStock ? "Còn hàng" : "Hết hàng"}
-            </span>
-            <button className="rounded-lg bg-red-primary px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-red-dark">
-              Mua ngay
-            </button>
-          </div>
+
         </div>
       </div>
     </div>
