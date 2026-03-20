@@ -65,10 +65,12 @@ export default function Header() {
       <div className="mx-auto max-w-7xl px-4">
         <div className="flex h-16 items-center justify-between md:h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-primary">
-              <Shield size={24} className="text-white" />
-            </div>
+          <Link href="/" className="flex items-center gap-1">
+            <img
+              src="/images/logo-03.png"
+              alt="Sơn Long PCCC Logo"
+              className="h-14 w-auto"
+            />
             <div>
               <span className="text-xl font-bold text-charcoal">
                 SƠN LONG

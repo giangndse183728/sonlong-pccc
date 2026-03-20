@@ -32,12 +32,14 @@ export default function Footer() {
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
           {/* Company info */}
           <div>
-            <Link href="/" className="mb-6 flex items-center gap-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-primary">
-                <Shield size={24} className="text-white" />
-              </div>
+            <Link href="/" className="mb-6 flex items-center gap-1">
+              <img
+                src="/images/logo-03.png"
+                alt="Sơn Long PCCC Logo"
+                className="h-14 w-auto"
+              />
               <div>
-                <span className="text-xl font-bold">SƠN LONG</span>
+                <span className="text-xl font-bold text-white">SƠN LONG</span>
                 <span className="ml-1 text-sm font-semibold text-red-primary">
                   PCCC
                 </span>
