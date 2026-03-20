@@ -53,8 +53,8 @@ export default function ProductDetailPage({
 
   const discount = product.originalPrice
     ? Math.round(
-        ((product.originalPrice - product.price) / product.originalPrice) * 100
-      )
+      ((product.originalPrice - product.price) / product.originalPrice) * 100
+    )
     : 0;
 
   const specs = [
@@ -151,25 +151,6 @@ export default function ProductDetailPage({
               {product.name}
             </h1>
 
-            {/* Rating */}
-            <div className="mb-6 flex items-center gap-2">
-              <div className="flex gap-0.5">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    size={18}
-                    className={
-                      i < product.rating
-                        ? "fill-amber-400 text-amber-400"
-                        : "text-gray-200"
-                    }
-                  />
-                ))}
-              </div>
-              <span className="text-sm text-steel">
-                ({product.rating}.0) | 24 đánh giá
-              </span>
-            </div>
 
             {/* Price */}
             <div className="mb-6 rounded-xl bg-silver p-4">
