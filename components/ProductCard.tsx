@@ -1,17 +1,7 @@
 import Link from "next/link";
 import { ShoppingCart, Eye, Star } from "lucide-react";
 
-export interface Product {
-  id: string;
-  name: string;
-  slug: string;
-  price: number;
-  originalPrice?: number;
-  image: string;
-  category: string;
-  inStock: boolean;
-  badge?: string;
-}
+import { Product } from "../types/product";
 
 function formatPrice(price: number) {
   return new Intl.NumberFormat("vi-VN").format(price) + "đ";
