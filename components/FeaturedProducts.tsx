@@ -1,10 +1,19 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import ProductCard from "./ProductCard";
-import { products } from "../data/products";
+import { supabase } from "../lib/supabase";
 
-export default function FeaturedProducts() {
-  const featured = products.slice(0, 8);
+export const revalidate = 60; // optionally cache the results
+
+export default async function FeaturedProducts() {
+  const { data: featured } = await supabase
+    .from("products")
+    .select("*")
+    .eq("available", true)
+    .order("created_at", { ascending: false })
+    .limit(8);
+
+  const displayedProducts = featured || [];
 
   return (
     <section className="bg-silver py-20">
@@ -15,7 +24,7 @@ export default function FeaturedProducts() {
               Sản phẩm nổi bật
             </span>
             <h2 className="text-3xl font-bold text-charcoal md:text-4xl">
-              Sản phẩm bán chạy nhất
+              Sản phẩm mới nhất
             </h2>
           </div>
           <Link
@@ -28,8 +37,8 @@ export default function FeaturedProducts() {
         </div>
 
         <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
-          {featured.map((product) => (
-            <ProductCard key={product.id} product={product} />
+          {displayedProducts.map((product) => (
+            <ProductCard key={product.id} product={product as import("../types/product").Product} />
           ))}
         </div>
       </div>

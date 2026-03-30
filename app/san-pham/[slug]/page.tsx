@@ -1,10 +1,8 @@
 "use client";
 
-import { use } from "react";
+import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import {
-  Star,
-  ShoppingCart,
   Phone,
   ShieldCheck,
   Truck,
@@ -16,11 +14,9 @@ import {
   Check,
 } from "lucide-react";
 import ProductCard from "../../../components/ProductCard";
-import { products } from "../../../data/products";
-
-function formatPrice(price: number) {
-  return new Intl.NumberFormat("vi-VN").format(price) + "đ";
-}
+import { supabase } from "../../../lib/supabase";
+import { Product } from "../../../types/product";
+import { Category } from "../../../types/category";
 
 export default function ProductDetailPage({
   params,
@@ -28,12 +24,64 @@ export default function ProductDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = use(params);
-  const product = products.find((p) => p.slug === slug);
-  const relatedProducts = products
-    .filter((p) => p.category === product?.category && p.id !== product?.id)
-    .slice(0, 4);
 
-  if (!product) {
+  const [productData, setProductData] = useState<Product | null>(null);
+  const [relatedProductsData, setRelatedProductsData] = useState<Product[]>([]);
+  const [category, setCategory] = useState<Category | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchData() {
+      setLoading(true);
+
+      const { data: product } = await supabase
+        .from("products")
+        .select("*")
+        .eq("slug", slug)
+        .single();
+
+      if (product) {
+        setProductData(product);
+
+        if (product.category_id) {
+          const { data: catData } = await supabase
+            .from("categories")
+            .select("*")
+            .eq("id", product.category_id)
+            .single();
+          if (catData) setCategory(catData);
+        }
+
+        let query = supabase
+          .from("products")
+          .select("*")
+          .eq("available", true)
+          .neq("id", product.id)
+          .limit(4);
+
+        if (product.category_id) {
+          query = query.eq("category_id", product.category_id);
+        }
+
+        const { data: related } = await query;
+        if (related) {
+          setRelatedProductsData(related);
+        }
+      }
+      setLoading(false);
+    }
+    fetchData();
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-silver">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-red-primary border-t-transparent"></div>
+      </div>
+    );
+  }
+
+  if (!productData) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
@@ -51,18 +99,23 @@ export default function ProductDetailPage({
     );
   }
 
-  const discount = product.originalPrice
-    ? Math.round(
-      ((product.originalPrice - product.price) / product.originalPrice) * 100
-    )
-    : 0;
+  // Map to unified shape for the UI
+  const product = {
+    ...productData,
+    categoryId: category?.name,
+    isAvailable: productData.available,
+    displayId: String(productData.id).length > 4 ? String(productData.id).slice(0, 4).toUpperCase() : String(productData.id).padStart(4, "0"),
+  };
 
   const specs = [
-    { label: "Mã sản phẩm", value: `SP-${product.id.padStart(4, "0")}` },
-    { label: "Danh mục", value: product.category },
-    { label: "Tình trạng", value: product.inStock ? "Còn hàng" : "Hết hàng" },
-    { label: "Bảo hành", value: "12 tháng" },
-    { label: "Xuất xứ", value: "Chính hãng" },
+
+    // Dynamically add features if present
+    ...(product.features
+      ? Object.entries(product.features).map(([key, value]) => ({
+        label: key, // In a real app we might translate keys to Vietnamese
+        value: String(value),
+      }))
+      : []),
   ];
 
   return (
@@ -90,44 +143,19 @@ export default function ProductDetailPage({
           {/* Image */}
           <div>
             <div className="relative aspect-square overflow-hidden rounded-xl bg-silver">
-              <div className="flex h-full w-full items-center justify-center text-steel">
-                <svg
-                  viewBox="0 0 100 100"
-                  className="h-32 w-32 opacity-20"
-                  fill="currentColor"
-                >
-                  <path d="M50 10 L60 35 L87 35 L65 52 L73 78 L50 62 L27 78 L35 52 L13 35 L40 35 Z" />
-                </svg>
-              </div>
-              {product.badge && (
-                <span className="absolute left-4 top-4 rounded-lg bg-red-primary px-3 py-1.5 text-sm font-bold text-white">
-                  {product.badge}
-                </span>
+              {product.image_url ? (
+                <img src={product.image_url} alt={product.name} className="h-full w-full object-cover" />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-steel">
+                  <svg
+                    viewBox="0 0 100 100"
+                    className="h-32 w-32 opacity-20"
+                    fill="currentColor"
+                  >
+                    <path d="M50 10 L60 35 L87 35 L65 52 L73 78 L50 62 L27 78 L35 52 L13 35 L40 35 Z" />
+                  </svg>
+                </div>
               )}
-              {discount > 0 && (
-                <span className="absolute left-4 top-14 rounded-lg bg-orange-warning px-3 py-1.5 text-sm font-bold text-white">
-                  -{discount}%
-                </span>
-              )}
-            </div>
-            {/* Thumbnails */}
-            <div className="mt-4 grid grid-cols-4 gap-3">
-              {[1, 2, 3, 4].map((i) => (
-                <button
-                  key={i}
-                  className={`aspect-square overflow-hidden rounded-lg border-2 bg-silver ${i === 1 ? "border-red-primary" : "border-transparent hover:border-steel-light"}`}
-                >
-                  <div className="flex h-full w-full items-center justify-center text-steel-light">
-                    <svg
-                      viewBox="0 0 100 100"
-                      className="h-8 w-8 opacity-30"
-                      fill="currentColor"
-                    >
-                      <path d="M50 10 L60 35 L87 35 L65 52 L73 78 L50 62 L27 78 L35 52 L13 35 L40 35 Z" />
-                    </svg>
-                  </div>
-                </button>
-              ))}
             </div>
           </div>
 
@@ -135,15 +163,15 @@ export default function ProductDetailPage({
           <div>
             <div className="mb-2 flex items-center gap-3">
               <span className="rounded-md bg-silver px-3 py-1 text-xs font-medium text-steel">
-                {product.category}
+                {product.categoryId || "Sản phẩm"}
               </span>
               <span
-                className={`flex items-center gap-1 text-xs font-medium ${product.inStock ? "text-green-success" : "text-red-primary"}`}
+                className={`flex items-center gap-1 text-xs font-medium ${product.isAvailable ? "text-green-success" : "text-red-primary"}`}
               >
                 <span
-                  className={`inline-block h-2 w-2 rounded-full ${product.inStock ? "bg-green-success" : "bg-red-primary"}`}
+                  className={`inline-block h-2 w-2 rounded-full ${product.isAvailable ? "bg-green-success" : "bg-red-primary"}`}
                 />
-                {product.inStock ? "Còn hàng" : "Hết hàng"}
+                {product.isAvailable ? "Còn hàng" : "Hết hàng"}
               </span>
             </div>
 
@@ -152,49 +180,20 @@ export default function ProductDetailPage({
             </h1>
 
 
-            {/* Price */}
-            <div className="mb-6 rounded-xl bg-silver p-4">
-              <div className="flex items-baseline gap-3">
-                <span className="text-3xl font-extrabold text-red-primary">
-                  {formatPrice(product.price)}
-                </span>
-                {product.originalPrice && (
-                  <span className="text-lg text-steel line-through">
-                    {formatPrice(product.originalPrice)}
-                  </span>
-                )}
-              </div>
-              {discount > 0 && (
-                <p className="mt-1 text-sm text-green-success">
-                  Tiết kiệm {formatPrice(product.originalPrice! - product.price)} ({discount}%)
-                </p>
-              )}
-            </div>
-
             {/* Description */}
             <p className="mb-6 text-sm leading-relaxed text-steel">
-              Sản phẩm {product.name} chính hãng, đạt tiêu chuẩn PCCC Việt Nam.
-              Phù hợp sử dụng cho văn phòng, nhà xưởng, chung cư, trường học
-              và các công trình dân dụng.
+              {product.description || `Sản phẩm ${product.name} chính hãng, đạt tiêu chuẩn PCCC Việt Nam. Phù hợp sử dụng cho văn phòng, nhà xưởng, chung cư, trường học và các công trình dân dụng.`}
             </p>
 
-            {/* Quantity & CTA */}
+            {/* CTA */}
             <div className="mb-6 flex flex-col gap-4 sm:flex-row">
-              <div className="flex items-center rounded-lg border border-gray-200">
-                <button className="flex h-11 w-11 items-center justify-center text-steel hover:text-charcoal">
-                  <Minus size={16} />
-                </button>
-                <span className="w-12 text-center text-sm font-semibold">
-                  1
-                </span>
-                <button className="flex h-11 w-11 items-center justify-center text-steel hover:text-charcoal">
-                  <Plus size={16} />
-                </button>
-              </div>
-              <button className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-red-primary px-8 py-3 font-bold text-white transition-colors hover:bg-red-dark">
-                <ShoppingCart size={18} />
-                Thêm vào giỏ hàng
-              </button>
+              <Link
+                href="/lien-he"
+                className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-red-primary px-8 py-3 font-bold text-white transition-colors hover:bg-red-dark"
+              >
+                <Phone size={18} />
+                Liên hệ
+              </Link>
             </div>
 
             <div className="mb-6 flex gap-3">
@@ -267,7 +266,7 @@ export default function ProductDetailPage({
                       <td className="px-4 py-3 text-charcoal">
                         {spec.label === "Tình trạng" ? (
                           <span
-                            className={`flex items-center gap-1 font-medium ${product.inStock ? "text-green-success" : "text-red-primary"}`}
+                            className={`flex items-center gap-1 font-medium ${product.isAvailable ? "text-green-success" : "text-red-primary"}`}
                           >
                             <Check size={14} /> {spec.value}
                           </span>
@@ -306,13 +305,13 @@ export default function ProductDetailPage({
         </div>
 
         {/* Related products */}
-        {relatedProducts.length > 0 && (
+        {relatedProductsData.length > 0 && (
           <div>
             <h2 className="mb-6 text-xl font-bold text-charcoal">
               Sản phẩm liên quan
             </h2>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {relatedProducts.map((p) => (
+              {relatedProductsData.map((p) => (
                 <ProductCard key={p.id} product={p} />
               ))}
             </div>

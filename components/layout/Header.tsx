@@ -67,9 +67,9 @@ export default function Header() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-1">
             <img
-              src="/images/logo-03.png"
+              src="/images/logo-pccc-03.png"
               alt="Sơn Long PCCC Logo"
-              className="h-14 w-auto"
+              className="h-12 w-auto"
             />
             <div>
               <span className="text-xl font-bold text-charcoal">
@@ -103,12 +103,6 @@ export default function Header() {
             >
               Báo giá ngay
             </Link>
-            <button className="relative p-2 text-charcoal transition-colors hover:text-red-primary">
-              <ShoppingCart size={22} />
-              <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-primary text-xs font-bold text-white">
-                0
-              </span>
-            </button>
             <button
               className="p-2 text-charcoal md:hidden"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -136,7 +130,7 @@ export default function Header() {
               onMouseEnter={() => setCategoryDropdown(true)}
               onMouseLeave={() => setCategoryDropdown(false)}
             >
-              <button className="inline-flex items-center gap-1 px-4 py-3 text-sm font-medium text-charcoal transition-colors hover:text-red-primary">
+              <button className="inline-flex flex-row items-center gap-1 px-4 py-3 text-sm font-medium text-charcoal transition-colors hover:text-red-primary">
                 Sản phẩm
                 <ChevronDown
                   size={14}

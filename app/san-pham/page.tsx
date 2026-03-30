@@ -1,48 +1,74 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { SlidersHorizontal, Grid3X3, List, Search, X } from "lucide-react";
 import ProductCard from "../../components/ProductCard";
-import { products } from "../../data/products";
-
-const categories = [
-  "Tất cả",
-  "Bình chữa cháy",
-  "Hệ thống báo cháy",
-  "Hệ thống Sprinkler",
-  "Vòi chữa cháy",
-  "Trang phục PCCC",
-  "Thiết bị cứu hộ",
-];
+import { supabase } from "../../lib/supabase";
+import { Product } from "../../types/product";
+import { Category } from "../../types/category";
 
 const sortOptions = [
   { value: "default", label: "Mặc định" },
   { value: "price-asc", label: "Giá: Thấp → Cao" },
   { value: "price-desc", label: "Giá: Cao → Thấp" },
   { value: "name-asc", label: "Tên: A → Z" },
-  { value: "rating", label: "Đánh giá cao nhất" },
 ];
 
 export default function ProductsPage() {
-  const [activeCategory, setActiveCategory] = useState("Tất cả");
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState("default");
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [showFilters, setShowFilters] = useState(false);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      
+      const [productsResponse, categoriesResponse] = await Promise.all([
+        supabase
+          .from("products")
+          .select("*")
+          .eq("available", true)
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("categories")
+          .select("*")
+          .order("name", { ascending: true })
+      ]);
+
+      if (!productsResponse.error && productsResponse.data) {
+        setProducts(productsResponse.data);
+      }
+      
+      if (!categoriesResponse.error && categoriesResponse.data) {
+        setCategories(categoriesResponse.data);
+      }
+      
+      setLoading(false);
+    };
+
+    fetchData();
+  }, []);
+
   const filtered = useMemo(() => {
     let result = [...products];
 
-    if (activeCategory !== "Tất cả") {
-      result = result.filter((p) => p.category === activeCategory);
+    if (activeCategory) {
+      const childIds = categories.filter(c => c.parent_id === activeCategory).map(c => c.id);
+      result = result.filter((p) => 
+        p.category_id === activeCategory || (p.category_id && childIds.includes(p.category_id))
+      );
     }
 
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       result = result.filter(
-        (p) =>
-          p.name.toLowerCase().includes(q) ||
-          p.category.toLowerCase().includes(q)
+        (p) => p.name.toLowerCase().includes(q)
       );
     }
 
@@ -59,7 +85,7 @@ export default function ProductsPage() {
     }
 
     return result;
-  }, [activeCategory, sortBy, searchQuery]);
+  }, [products, activeCategory, sortBy, searchQuery]);
 
   return (
     <div className="min-h-screen bg-silver">
@@ -78,7 +104,7 @@ export default function ProductsPage() {
           </h1>
           <p className="mt-2 text-gray-400">
             {filtered.length} sản phẩm
-            {activeCategory !== "Tất cả" && ` trong "${activeCategory}"`}
+            {activeCategory && ` trong "${categories.find(c => c.id === activeCategory)?.name || ''}"`}
           </p>
         </div>
       </div>
@@ -155,45 +181,52 @@ export default function ProductsPage() {
                 Danh mục
               </h3>
               <ul className="space-y-1">
-                {categories.map((cat) => (
-                  <li key={cat}>
-                    <button
-                      onClick={() => setActiveCategory(cat)}
-                      className={`w-full rounded-lg px-3 py-2 text-left text-sm transition-colors ${activeCategory === cat
-                          ? "bg-red-primary/10 font-semibold text-red-primary"
-                          : "text-steel hover:bg-silver hover:text-charcoal"
-                        }`}
-                    >
-                      {cat}
-                    </button>
-                  </li>
-                ))}
+                <li>
+                  <button
+                    onClick={() => setActiveCategory(null)}
+                    className={`w-full rounded-lg px-3 py-2 text-left text-sm transition-colors ${!activeCategory
+                        ? "bg-red-primary/10 font-semibold text-red-primary"
+                        : "text-steel hover:bg-silver hover:text-charcoal"
+                      }`}
+                  >
+                    Tất cả
+                  </button>
+                </li>
+                {categories.filter(c => !c.parent_id).map((parentCat) => {
+                  const children = categories.filter(c => c.parent_id === parentCat.id);
+                  return (
+                    <li key={parentCat.id} className="mb-2">
+                      <button
+                        onClick={() => setActiveCategory(parentCat.id)}
+                        className={`w-full rounded-lg px-3 py-2 text-left text-sm transition-colors ${activeCategory === parentCat.id
+                            ? "font-bold text-red-primary"
+                            : "font-semibold text-charcoal hover:text-red-primary"
+                          }`}
+                      >
+                        {parentCat.name}
+                      </button>
+                      {children.length > 0 && (
+                        <ul className="ml-4 mt-1 space-y-1 border-l border-gray-100 pl-3">
+                          {children.map(childCat => (
+                            <li key={childCat.id}>
+                              <button
+                                onClick={() => setActiveCategory(childCat.id)}
+                                className={`w-full rounded-lg px-3 py-1.5 text-left text-sm transition-colors ${activeCategory === childCat.id
+                                    ? "bg-red-primary/10 font-semibold text-red-primary"
+                                    : "text-steel hover:bg-silver hover:text-charcoal"
+                                  }`}
+                              >
+                                {childCat.name}
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
 
-              <div className="my-6 border-t border-gray-100" />
-
-              <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-charcoal">
-                Khoảng giá
-              </h3>
-              <div className="space-y-2">
-                {[
-                  "Dưới 200.000đ",
-                  "200.000đ - 500.000đ",
-                  "500.000đ - 1.000.000đ",
-                  "Trên 1.000.000đ",
-                ].map((range) => (
-                  <label
-                    key={range}
-                    className="flex cursor-pointer items-center gap-2 text-sm text-steel"
-                  >
-                    <input
-                      type="checkbox"
-                      className="h-4 w-4 rounded border-gray-300 accent-red-primary"
-                    />
-                    {range}
-                  </label>
-                ))}
-              </div>
 
             </div>
           </aside>

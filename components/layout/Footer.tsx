@@ -34,12 +34,12 @@ export default function Footer() {
           <div>
             <Link href="/" className="mb-6 flex items-center gap-1">
               <img
-                src="/images/logo-03.png"
+                src="/images/logo-pccc-03.png"
                 alt="Sơn Long PCCC Logo"
                 className="h-14 w-auto"
               />
               <div>
-                <span className="text-xl font-bold text-white">SƠN LONG</span>
+                <span className="primary-font text-xl font-bold text-white">SƠN LONG</span>
                 <span className="ml-1 text-sm font-semibold text-red-primary">
                   PCCC
                 </span>

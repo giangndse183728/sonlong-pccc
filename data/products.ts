@@ -1,6 +1,4 @@
-import { Product } from "../types/product";
-
-export const products: Product[] = [
+export const products = [
   {
     id: "1",
     name: "Bình chữa cháy bột ABC 4kg TOMOKEN",
